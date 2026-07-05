@@ -4,15 +4,14 @@
   "description": "Бэкенд для сайта презентаций",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^17.4.2",
     "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^9.0.3"
+    "nodemailer": "^6.9.0",
+    "dotenv": "^16.0.0"
   }
 }
