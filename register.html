@@ -40,23 +40,46 @@
           <h2 class="text-center mb-4">Регистрация</h2>
           
           <form id="registerForm">
-            <div class="mb-3">
-              <label for="regName" class="form-label">Имя</label>
-              <input type="text" class="form-control" id="regName" placeholder="Введите имя" required>
+            <!-- Шаг 1: Данные -->
+            <div id="step1">
+              <div class="mb-3">
+                <label for="regName" class="form-label">Имя</label>
+                <input type="text" class="form-control" id="regName" placeholder="Введите имя" required>
+              </div>
+              <div class="mb-3">
+                <label for="regEmail" class="form-label">Email</label>
+                <input type="email" class="form-control" id="regEmail" placeholder="Введите email" required>
+                <div class="mt-2">
+                  <button type="button" class="btn btn-outline-custom btn-sm w-100" id="sendCodeBtn">
+                    <i class="bi bi-envelope me-1"></i>Получить код подтверждения
+                  </button>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="regPassword" class="form-label">Пароль</label>
+                <input type="password" class="form-control" id="regPassword" placeholder="Минимум 6 символов" required minlength="6">
+              </div>
             </div>
-            <div class="mb-3">
-              <label for="regEmail" class="form-label">Email</label>
-              <input type="email" class="form-control" id="regEmail" placeholder="Введите email" required>
+            
+            <!-- Шаг 2: Код подтверждения (скрыт изначально) -->
+            <div id="step2" style="display:none;">
+              <div class="text-center mb-3">
+                <i class="bi bi-envelope-check fs-1" style="color: #e0aaff;"></i>
+                <p class="mt-2">Код отправлен на <strong id="codeEmail"></strong></p>
+              </div>
+              <div class="mb-3">
+                <label for="verifyCode" class="form-label">Код подтверждения</label>
+                <input type="text" class="form-control text-center" id="verifyCode" placeholder="000000" maxlength="6" style="font-size: 24px; letter-spacing: 8px;">
+              </div>
             </div>
-            <div class="mb-3">
-              <label for="regPassword" class="form-label">Пароль</label>
-              <input type="password" class="form-control" id="regPassword" placeholder="Минимум 6 символов" required minlength="6">
-            </div>
+            
             <div id="regError" class="text-danger mb-3" style="display:none;"></div>
             <div id="regSuccess" class="text-success mb-3" style="display:none;"></div>
-            <button type="submit" class="btn btn-custom w-100 mb-3">
+            
+            <button type="submit" class="btn btn-custom w-100 mb-3" id="submitBtn" disabled>
               <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
             </button>
+            
             <p class="text-center">
               Уже есть аккаунт? <a href="login.html" style="color: #e0aaff;">Войти</a>
             </p>
@@ -79,19 +102,86 @@
   <script src="js/main.js"></script>
   
   <script>
+    let verificationCode = '';
+    let codeSent = false;
+    
+    // Отправка кода на почту
+    document.getElementById('sendCodeBtn').addEventListener('click', async function() {
+      const email = document.getElementById('regEmail').value.trim();
+      const errorDiv = document.getElementById('regError');
+      
+      if (!email || !email.includes('@')) {
+        errorDiv.textContent = 'Введите корректный email';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      this.disabled = true;
+      this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Отправка...';
+      
+      try {
+        const res = await fetch('/api/send-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          verificationCode = data.code;
+          codeSent = true;
+          
+          document.getElementById('step2').style.display = 'block';
+          document.getElementById('codeEmail').textContent = email;
+          document.getElementById('submitBtn').disabled = false;
+          document.getElementById('sendCodeBtn').innerHTML = '✅ Код отправлен';
+          errorDiv.style.display = 'none';
+        } else {
+          errorDiv.textContent = data.error || 'Ошибка отправки кода';
+          errorDiv.style.display = 'block';
+          this.disabled = false;
+          this.innerHTML = '<i class="bi bi-envelope me-1"></i>Получить код подтверждения';
+        }
+      } catch (err) {
+        // Локальный режим — генерируем код сами
+        verificationCode = String(Math.floor(100000 + Math.random() * 900000));
+        codeSent = true;
+        
+        document.getElementById('step2').style.display = 'block';
+        document.getElementById('codeEmail').textContent = email;
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('sendCodeBtn').innerHTML = '✅ Код: ' + verificationCode + ' (тест)';
+        errorDiv.style.display = 'none';
+      }
+    });
+    
+    // Регистрация
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
-      const name = document.getElementById('regName').value;
-      const email = document.getElementById('regEmail').value;
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
+      const code = document.getElementById('verifyCode').value.trim();
       const errorDiv = document.getElementById('regError');
       const successDiv = document.getElementById('regSuccess');
       
       errorDiv.style.display = 'none';
       successDiv.style.display = 'none';
       
-      // Пробуем через сервер
+      if (!codeSent) {
+        errorDiv.textContent = 'Сначала получите код подтверждения';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (code !== verificationCode) {
+        errorDiv.textContent = 'Неверный код подтверждения';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
       try {
         const res = await fetch('/api/register', {
           method: 'POST',
@@ -103,19 +193,17 @@
         
         if (res.ok) {
           localStorage.setItem('token', data.token);
-          successDiv.textContent = 'Регистрация успешна! Переадресация...';
+          successDiv.innerHTML = '✅ Регистрация успешна!';
           successDiv.style.display = 'block';
-          setTimeout(() => window.location.href = 'cabinet.html', 1000);
+          setTimeout(() => window.location.href = 'cabinet.html', 1500);
         } else {
           errorDiv.textContent = data.error || 'Ошибка регистрации';
           errorDiv.style.display = 'block';
         }
       } catch (err) {
-        // Оффлайн-режим
         const users = JSON.parse(localStorage.getItem('users')) || [];
-        
         if (users.find(u => u.email === email)) {
-          errorDiv.textContent = 'Пользователь с таким email уже существует';
+          errorDiv.textContent = 'Email уже используется';
           errorDiv.style.display = 'block';
           return;
         }
@@ -126,9 +214,9 @@
         localStorage.setItem('token', 'local_token_' + newUser.id);
         localStorage.setItem('userProfile', JSON.stringify(newUser));
         
-        successDiv.textContent = 'Регистрация успешна! Переадресация...';
+        successDiv.innerHTML = '✅ Регистрация успешна!';
         successDiv.style.display = 'block';
-        setTimeout(() => window.location.href = 'cabinet.html', 1000);
+        setTimeout(() => window.location.href = 'cabinet.html', 1500);
       }
     });
   </script>

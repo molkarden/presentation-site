@@ -23,7 +23,10 @@ const EMAIL_FROM = `"Презентации на заказ" <${process.env.EMAI
 const ADMIN_EMAIL = process.env.EMAIL_USER || 'molkarden7@gmail.com';
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
-// ========== НОВАЯ ФУНКЦИЯ: Отправка пароля при регистрации ==========
+// ========== ХРАНИЛИЩЕ КОДОВ ПОДТВЕРЖДЕНИЯ ==========
+const verificationCodes = {};
+
+// ========== ФУНКЦИЯ: Отправка пароля при регистрации ==========
 async function sendWelcomeEmail(user, password) {
   try {
     await transporter.sendMail({
@@ -589,6 +592,78 @@ app.get('/api/admin/orders/export', adminMiddleware, (req, res) => {
   }
 });
 
+// ========== ПОДТВЕРЖДЕНИЕ ПОЧТЫ ==========
+
+// Отправка кода подтверждения на почту
+app.post('/api/send-code', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email обязателен' });
+    }
+    
+    // Генерируем 6-значный код
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    
+    // Сохраняем код (действителен 10 минут)
+    verificationCodes[email] = {
+      code,
+      expires: Date.now() + 10 * 60 * 1000
+    };
+    
+    // Отправляем код на почту
+    await transporter.sendMail({
+      from: EMAIL_FROM,
+      to: email,
+      subject: 'Код подтверждения регистрации',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; background: #1a1a2e; border-radius: 15px; padding: 40px; color: white; text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
+          <h2 style="color: #e0aaff; margin-bottom: 10px;">Код подтверждения</h2>
+          <p style="color: #a78bfa; margin-bottom: 30px;">Введите этот код на странице регистрации:</p>
+          <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 20px; margin-bottom: 30px;">
+            <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #ffd6ff;">${code}</span>
+          </div>
+          <p style="color: #6b7280; font-size: 14px;">Код действителен в течение 10 минут</p>
+        </div>
+      `
+    });
+    
+    console.log('✅ Код отправлен на', email, ':', code);
+    
+    res.json({ message: 'Код отправлен на почту' });
+  } catch (err) {
+    console.error('❌ Ошибка отправки кода:', err.message);
+    res.status(500).json({ error: 'Ошибка отправки кода' });
+  }
+});
+
+// Проверка кода
+app.post('/api/verify-code', (req, res) => {
+  const { email, code } = req.body;
+  
+  const stored = verificationCodes[email];
+  
+  if (!stored) {
+    return res.status(400).json({ error: 'Код не найден. Запросите новый.' });
+  }
+  
+  if (Date.now() > stored.expires) {
+    delete verificationCodes[email];
+    return res.status(400).json({ error: 'Код истёк. Запросите новый.' });
+  }
+  
+  if (stored.code !== code) {
+    return res.status(400).json({ error: 'Неверный код' });
+  }
+  
+  // Код верный — удаляем его
+  delete verificationCodes[email];
+  
+  res.json({ message: 'Код подтверждён' });
+});
+
 // ========== СЛУЖЕБНЫЕ ==========
 
 app.get('/api/health', (req, res) => {
@@ -618,5 +693,5 @@ app.listen(PORT, () => {
   console.log(` API: http://localhost:${PORT}/api`);
   console.log(` Админ-панель: http://localhost:${PORT}/admin-login.html`);
   console.log(` Тест email: http://localhost:${PORT}/api/test-email`);
-  console.log(` Нажмите Ctrl+C для остановки`);
+
 });
