@@ -13,10 +13,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-pro
 // ========== НАСТРОЙКА ПОЧТЫ ==========
 const transporter = nodemailer.createTransport({
   service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER || 'molkarden7@gmail.com',
     pass: process.env.EMAIL_PASS || 'ghep phio hvgz hxlj'
-  }
+  },
+  tls: {
+    rejectUnauthorized: false
+  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000
 });
 
 const EMAIL_FROM = `"Презентации на заказ" <${process.env.EMAIL_USER || 'molkarden7@gmail.com'}>`;
@@ -669,9 +678,9 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен: http://localhost:${PORT}`);
-  console.log(`📋 API: http://localhost:${PORT}/api`);
-  console.log(`👑 Админ-панель: http://localhost:${PORT}/admin-login.html`);
-  console.log(`📧 Тест email: http://localhost:${PORT}/api/test-email`);
-  console.log(`💡 Нажмите Ctrl+C для остановки`);
+  console.log(` Сервер запущен: http://localhost:${PORT}`);
+  console.log(` API: http://localhost:${PORT}/api`);
+  console.log(` Админ-панель: http://localhost:${PORT}/admin-login.html`);
+  console.log(` Тест email: http://localhost:${PORT}/api/test-email`);
+  console.log(` Нажмите Ctrl+C для остановки`);
 });
