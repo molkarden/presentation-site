@@ -66,6 +66,7 @@
               <div class="text-center mb-3">
                 <i class="bi bi-envelope-check fs-1" style="color: #e0aaff;"></i>
                 <p class="mt-2">Код отправлен на <strong id="codeEmail"></strong></p>
+                <p class="small text-white-50">Проверьте папку "Входящие" или "Спам"</p>
               </div>
               <div class="mb-3">
                 <label for="verifyCode" class="form-label">Код подтверждения</label>
@@ -102,13 +103,15 @@
   <script src="js/main.js"></script>
   
   <script>
-    let verificationCode = '';
     let codeSent = false;
+    let sendingCode = false;
     
     // Отправка кода на почту
     document.getElementById('sendCodeBtn').addEventListener('click', async function() {
       const email = document.getElementById('regEmail').value.trim();
       const errorDiv = document.getElementById('regError');
+      
+      if (sendingCode) return;
       
       if (!email || !email.includes('@')) {
         errorDiv.textContent = 'Введите корректный email';
@@ -116,8 +119,10 @@
         return;
       }
       
+      sendingCode = true;
       this.disabled = true;
       this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Отправка...';
+      errorDiv.style.display = 'none';
       
       try {
         const res = await fetch('/api/send-code', {
@@ -129,30 +134,29 @@
         const data = await res.json();
         
         if (res.ok) {
-          verificationCode = data.code;
           codeSent = true;
           
           document.getElementById('step2').style.display = 'block';
           document.getElementById('codeEmail').textContent = email;
           document.getElementById('submitBtn').disabled = false;
           document.getElementById('sendCodeBtn').innerHTML = '✅ Код отправлен';
+          document.getElementById('sendCodeBtn').classList.remove('btn-outline-custom');
+          document.getElementById('sendCodeBtn').classList.add('btn-success');
+          document.getElementById('sendCodeBtn').disabled = true;
           errorDiv.style.display = 'none';
         } else {
           errorDiv.textContent = data.error || 'Ошибка отправки кода';
           errorDiv.style.display = 'block';
           this.disabled = false;
           this.innerHTML = '<i class="bi bi-envelope me-1"></i>Получить код подтверждения';
+          sendingCode = false;
         }
       } catch (err) {
-        // Локальный режим — генерируем код сами
-        verificationCode = String(Math.floor(100000 + Math.random() * 900000));
-        codeSent = true;
-        
-        document.getElementById('step2').style.display = 'block';
-        document.getElementById('codeEmail').textContent = email;
-        document.getElementById('submitBtn').disabled = false;
-        document.getElementById('sendCodeBtn').innerHTML = '✅ Код: ' + verificationCode + ' (тест)';
-        errorDiv.style.display = 'none';
+        errorDiv.textContent = 'Сервер недоступен. Попробуйте позже.';
+        errorDiv.style.display = 'block';
+        this.disabled = false;
+        this.innerHTML = '<i class="bi bi-envelope me-1"></i>Получить код подтверждения';
+        sendingCode = false;
       }
     });
     
@@ -176,13 +180,22 @@
         return;
       }
       
-      if (code !== verificationCode) {
-        errorDiv.textContent = 'Неверный код подтверждения';
-        errorDiv.style.display = 'block';
-        return;
-      }
-      
+      // Проверяем код через сервер
       try {
+        const verifyRes = await fetch('/api/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code })
+        });
+        
+        if (!verifyRes.ok) {
+          const errData = await verifyRes.json();
+          errorDiv.textContent = errData.error || 'Неверный код';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        
+        // Код верный — регистрируем
         const res = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -201,22 +214,8 @@
           errorDiv.style.display = 'block';
         }
       } catch (err) {
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        if (users.find(u => u.email === email)) {
-          errorDiv.textContent = 'Email уже используется';
-          errorDiv.style.display = 'block';
-          return;
-        }
-        
-        const newUser = { id: Date.now(), name, email, password };
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('token', 'local_token_' + newUser.id);
-        localStorage.setItem('userProfile', JSON.stringify(newUser));
-        
-        successDiv.innerHTML = '✅ Регистрация успешна!';
-        successDiv.style.display = 'block';
-        setTimeout(() => window.location.href = 'cabinet.html', 1500);
+        errorDiv.textContent = 'Ошибка соединения. Попробуйте позже.';
+        errorDiv.style.display = 'block';
       }
     });
   </script>
