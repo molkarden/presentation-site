@@ -35,244 +35,155 @@ const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 // ========== ХРАНИЛИЩЕ КОДОВ ПОДТВЕРЖДЕНИЯ ==========
 const verificationCodes = {};
 
-// ========== ФУНКЦИЯ: Отправка пароля при регистрации ==========
-async function sendWelcomeEmail(user, password) {
-  try {
-    await transporter.sendMail({
-      from: EMAIL_FROM,
-      to: user.email,
-      subject: 'Добро пожаловать! Ваши данные для входа ✨',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f0ff;">
-          <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 40px 20px; text-align: center;">
-            <div style="font-size: 48px;">🎉</div>
-            <h1 style="color: white; margin: 0; font-size: 28px;">Добро пожаловать!</h1>
-            <p style="color: #e9d5ff; margin: 10px 0 0;">Ваш аккаунт создан</p>
+// ========== ФУНКЦИЯ: Отправка пароля при регистрации (в фоне) ==========
+function sendWelcomeEmail(user, password) {
+  transporter.sendMail({
+    from: EMAIL_FROM,
+    to: user.email,
+    subject: 'Добро пожаловать! Ваши данные для входа ✨',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f0ff;">
+        <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 40px 20px; text-align: center;">
+          <div style="font-size: 48px;">🎉</div>
+          <h1 style="color: white; margin: 0; font-size: 28px;">Добро пожаловать!</h1>
+          <p style="color: #e9d5ff; margin: 10px 0 0;">Ваш аккаунт создан</p>
+        </div>
+        <div style="max-width: 600px; margin: 0 auto; padding: 30px 20px;">
+          <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
+            <p style="font-size: 18px; color: #4c1d95;">Здравствуйте, <strong>${user.name}</strong>! 👋</p>
+            <p style="color: #6b7280;">Ваш аккаунт успешно создан. Данные для входа:</p>
+            <div style="background: #f8f7ff; border-radius: 10px; padding: 20px; margin: 20px 0;">
+              <p style="margin: 5px 0;"><strong>📧 Email:</strong> ${user.email}</p>
+              <p style="margin: 5px 0;"><strong>🔑 Пароль:</strong> <span style="background: #ede9fe; padding: 3px 10px; border-radius: 5px; font-family: monospace;">${password}</span></p>
+            </div>
+            <p style="color: #ef4444; font-size: 14px;">⚠️ Рекомендуем сменить пароль после первого входа.</p>
           </div>
-          <div style="max-width: 600px; margin: 0 auto; padding: 30px 20px;">
-            <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
-              <p style="font-size: 18px; color: #4c1d95;">Здравствуйте, <strong>${user.name}</strong>! 👋</p>
-              <p style="color: #6b7280;">Ваш аккаунт успешно создан. Данные для входа:</p>
-              <div style="background: #f8f7ff; border-radius: 10px; padding: 20px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>📧 Email:</strong> ${user.email}</p>
-                <p style="margin: 5px 0;"><strong>🔑 Пароль:</strong> <span style="background: #ede9fe; padding: 3px 10px; border-radius: 5px; font-family: monospace;">${password}</span></p>
-              </div>
-              <p style="color: #ef4444; font-size: 14px;">⚠️ Рекомендуем сменить пароль после первого входа.</p>
-            </div>
-            <div style="text-align: center;">
-              <a href="${SITE_URL}/login.html" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-decoration: none; padding: 15px 40px; border-radius: 50px; font-weight: 600;">Войти в личный кабинет</a>
-            </div>
-            <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 13px;">
-              <p>© 2025 «Презентации на заказ»</p>
-            </div>
+          <div style="text-align: center;">
+            <a href="${SITE_URL}/login.html" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-decoration: none; padding: 15px 40px; border-radius: 50px; font-weight: 600;">Войти в личный кабинет</a>
           </div>
-        </body>
-        </html>
-      `
-    });
-    console.log('✅ Приветственное письмо отправлено:', user.email);
-  } catch (err) {
-    console.error('❌ Ошибка отправки приветственного письма:', err.message);
-  }
-}
-
-// Функция отправки уведомлений о новом заказе
-async function sendOrderEmails(order) {
-  try {
-    // Письмо клиенту
-    await transporter.sendMail({
-      from: EMAIL_FROM,
-      to: order.email,
-      subject: `Заказ #${order.orderId} принят в работу ✨`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-        </head>
-        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f0ff;">
-          
-          <!-- Шапка -->
-          <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 40px 20px; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 10px;">✨</div>
-            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Спасибо за заказ!</h1>
-            <p style="color: #e9d5ff; margin: 10px 0 0; font-size: 16px;">Ваша презентация уже в работе</p>
-          </div>
-          
-          <!-- Основной блок -->
-          <div style="max-width: 600px; margin: 0 auto; padding: 30px 20px;">
-            
-            <!-- Приветствие -->
-            <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
-              <p style="font-size: 18px; color: #4c1d95; margin: 0 0 10px;">
-                Здравствуйте, <strong>${order.customer_name}</strong>! 👋
-              </p>
-              <p style="color: #6b7280; line-height: 1.6; margin: 0;">
-                Ваш заказ <strong style="color: #7c3aed;">#${order.orderId}</strong> успешно оформлен. 
-                Мы уже приступили к работе над вашей презентацией.
-              </p>
-            </div>
-            
-            <!-- Детали заказа -->
-            <div style="background: white; border-radius: 15px; padding: 0; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1); overflow: hidden;">
-              <div style="background: #f8f7ff; padding: 20px 30px; border-bottom: 1px solid #ede9fe;">
-                <h3 style="color: #4c1d95; margin: 0; font-size: 18px;">📋 Детали заказа</h3>
-              </div>
-              <div style="padding: 25px 30px;">
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 12px 0; color: #6b7280; border-bottom: 1px solid #f3f4f6;">
-                      💰 Сумма
-                    </td>
-                    <td style="padding: 12px 0; text-align: right; font-weight: 700; color: #7c3aed; font-size: 20px; border-bottom: 1px solid #f3f4f6;">
-                      ${(order.total || 0).toLocaleString()} ₽
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 12px 0; color: #6b7280; border-bottom: 1px solid #f3f4f6;">
-                      📝 Статус
-                    </td>
-                    <td style="padding: 12px 0; text-align: right; border-bottom: 1px solid #f3f4f6;">
-                      <span style="background: #fef3c7; color: #d97706; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600;">В обработке</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 12px 0; color: #6b7280;">
-                      📅 Дата
-                    </td>
-                    <td style="padding: 12px 0; text-align: right; color: #4c1d95; font-weight: 600;">
-                      ${new Date(order.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-            
-            <!-- Что дальше -->
-            <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
-              <h3 style="color: #4c1d95; margin: 0 0 20px; font-size: 18px;">🚀 Что дальше?</h3>
-              
-              <table style="width: 100%;">
-                <tr>
-                  <td style="vertical-align: top; padding-bottom: 20px;">
-                    <div style="width: 40px; height: 40px; background: #ede9fe; border-radius: 50%; text-align: center; line-height: 40px; font-weight: 700; color: #7c3aed;">1</div>
-                  </td>
-                  <td style="padding-left: 15px; padding-bottom: 20px; color: #4c1d95;">
-                    <strong>Связь с менеджером</strong><br>
-                    <span style="color: #6b7280; font-size: 14px;">Мы свяжемся с вами в течение 24 часов для уточнения деталей</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="vertical-align: top; padding-bottom: 20px;">
-                    <div style="width: 40px; height: 40px; background: #ede9fe; border-radius: 50%; text-align: center; line-height: 40px; font-weight: 700; color: #7c3aed;">2</div>
-                  </td>
-                  <td style="padding-left: 15px; padding-bottom: 20px; color: #4c1d95;">
-                    <strong>Создание макета</strong><br>
-                    <span style="color: #6b7280; font-size: 14px;">Подготовим дизайн-макет и отправим вам на согласование</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="vertical-align: top;">
-                    <div style="width: 40px; height: 40px; background: #ede9fe; border-radius: 50%; text-align: center; line-height: 40px; font-weight: 700; color: #7c3aed;">3</div>
-                  </td>
-                  <td style="padding-left: 15px; color: #4c1d95;">
-                    <strong>Готовый результат</strong><br>
-                    <span style="color: #6b7280; font-size: 14px;">Вы получаете готовую презентацию, которая впечатлит вашу аудиторию</span>
-                  </td>
-                </tr>
-              </table>
-            </div>
-            
-            <!-- Контакты -->
-            <div style="background: white; border-radius: 15px; padding: 25px 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
-              <h3 style="color: #4c1d95; margin: 0 0 15px; font-size: 18px;">📞 Есть вопросы?</h3>
-              <table style="width: 100%;">
-                <tr>
-                  <td style="padding: 5px 0; color: #6b7280;">
-                    ✉️ <a href="mailto:${ADMIN_EMAIL}" style="color: #7c3aed; text-decoration: none;">${ADMIN_EMAIL}</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 5px 0; color: #6b7280;">
-                    📱 <span style="color: #4c1d95;">+7 (777) 777-77-77</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 5px 0; color: #6b7280;">
-                    🕐 Пн-Пт: 9:00-18:00
-                  </td>
-                </tr>
-              </table>
-            </div>
-            
-            <!-- Кнопка -->
-            <div style="text-align: center; margin-bottom: 20px;">
-              <a href="${SITE_URL}/cabinet.html" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-decoration: none; padding: 15px 40px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">
-                Перейти в личный кабинет
-              </a>
-            </div>
-            
-            <!-- Подвал -->
-            <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 13px;">
-              <p style="margin: 0 0 10px;">© 2025 «Презентации на заказ». Все права защищены.</p>
-              <p style="margin: 0;">Вы получили это письмо, потому что оформили заказ на нашем сайте.</p>
-            </div>
-            
-          </div>
-        </body>
-        </html>
-      `
-    });
-
-    // Письмо админу
-    await transporter.sendMail({
-      from: EMAIL_FROM,
-      to: ADMIN_EMAIL,
-      subject: `🛒 Новый заказ #${order.orderId} от ${order.customer_name}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; background: #1a1a2e; border-radius: 15px; padding: 30px; color: white;">
-          <h2 style="color: #e0aaff; margin: 0 0 20px;">🛒 Новый заказ!</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <td style="padding: 12px; color: #a78bfa;"><strong>ID</strong></td>
-              <td style="padding: 12px;">${order.orderId}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <td style="padding: 12px; color: #a78bfa;"><strong>Клиент</strong></td>
-              <td style="padding: 12px;">${order.customer_name}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <td style="padding: 12px; color: #a78bfa;"><strong>Email</strong></td>
-              <td style="padding: 12px;">${order.email}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <td style="padding: 12px; color: #a78bfa;"><strong>Телефон</strong></td>
-              <td style="padding: 12px;">${order.phone || '—'}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <td style="padding: 12px; color: #a78bfa;"><strong>Сумма</strong></td>
-              <td style="padding: 12px; color: #ffd6ff; font-size: 18px;"><strong>${(order.total || 0).toLocaleString()} ₽</strong></td>
-            </tr>
-            <tr>
-              <td style="padding: 12px; color: #a78bfa;"><strong>Описание</strong></td>
-              <td style="padding: 12px;">${order.description || '—'}</td>
-            </tr>
-          </table>
-          <div style="text-align: center; margin-top: 25px;">
-            <a href="${SITE_URL}/admin.html" style="background: linear-gradient(135deg, #e0aaff, #ffd6ff); color: #2a2a2a; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block;">
-              Открыть админ-панель
-            </a>
+          <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 13px;">
+            <p>© 2025 «Презентации на заказ»</p>
           </div>
         </div>
-      `
-    });
+      </body>
+      </html>
+    `
+  }).then(() => console.log('✅ Приветственное письмо отправлено:', user.email))
+    .catch(err => console.error('❌ Ошибка:', err.message));
+}
 
-    console.log('✅ Письма отправлены');
-  } catch (err) {
-    console.error('❌ Ошибка отправки письма:', err.message);
-  }
+// Функция отправки уведомлений о новом заказе (в фоне)
+function sendOrderEmails(order) {
+  // Письмо клиенту
+  transporter.sendMail({
+    from: EMAIL_FROM,
+    to: order.email,
+    subject: `Заказ #${order.orderId} принят в работу ✨`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="utf-8"></head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f0ff;">
+        <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 40px 20px; text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 10px;">✨</div>
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Спасибо за заказ!</h1>
+          <p style="color: #e9d5ff; margin: 10px 0 0; font-size: 16px;">Ваша презентация уже в работе</p>
+        </div>
+        <div style="max-width: 600px; margin: 0 auto; padding: 30px 20px;">
+          <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
+            <p style="font-size: 18px; color: #4c1d95; margin: 0 0 10px;">
+              Здравствуйте, <strong>${order.customer_name}</strong>! 👋
+            </p>
+            <p style="color: #6b7280; line-height: 1.6; margin: 0;">
+              Ваш заказ <strong style="color: #7c3aed;">#${order.orderId}</strong> успешно оформлен. 
+              Мы уже приступили к работе над вашей презентацией.
+            </p>
+          </div>
+          <div style="background: white; border-radius: 15px; padding: 0; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1); overflow: hidden;">
+            <div style="background: #f8f7ff; padding: 20px 30px; border-bottom: 1px solid #ede9fe;">
+              <h3 style="color: #4c1d95; margin: 0; font-size: 18px;">📋 Детали заказа</h3>
+            </div>
+            <div style="padding: 25px 30px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 12px 0; color: #6b7280; border-bottom: 1px solid #f3f4f6;">💰 Сумма</td>
+                  <td style="padding: 12px 0; text-align: right; font-weight: 700; color: #7c3aed; font-size: 20px; border-bottom: 1px solid #f3f4f6;">${(order.total || 0).toLocaleString()} ₽</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; color: #6b7280; border-bottom: 1px solid #f3f4f6;">📝 Статус</td>
+                  <td style="padding: 12px 0; text-align: right; border-bottom: 1px solid #f3f4f6;"><span style="background: #fef3c7; color: #d97706; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600;">В обработке</span></td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; color: #6b7280;">📅 Дата</td>
+                  <td style="padding: 12px 0; text-align: right; color: #4c1d95; font-weight: 600;">${new Date(order.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
+            <h3 style="color: #4c1d95; margin: 0 0 20px; font-size: 18px;">🚀 Что дальше?</h3>
+            <table style="width: 100%;">
+              <tr>
+                <td style="vertical-align: top; padding-bottom: 20px;"><div style="width: 40px; height: 40px; background: #ede9fe; border-radius: 50%; text-align: center; line-height: 40px; font-weight: 700; color: #7c3aed;">1</div></td>
+                <td style="padding-left: 15px; padding-bottom: 20px; color: #4c1d95;"><strong>Связь с менеджером</strong><br><span style="color: #6b7280; font-size: 14px;">Мы свяжемся с вами в течение 24 часов для уточнения деталей</span></td>
+              </tr>
+              <tr>
+                <td style="vertical-align: top; padding-bottom: 20px;"><div style="width: 40px; height: 40px; background: #ede9fe; border-radius: 50%; text-align: center; line-height: 40px; font-weight: 700; color: #7c3aed;">2</div></td>
+                <td style="padding-left: 15px; padding-bottom: 20px; color: #4c1d95;"><strong>Создание макета</strong><br><span style="color: #6b7280; font-size: 14px;">Подготовим дизайн-макет и отправим вам на согласование</span></td>
+              </tr>
+              <tr>
+                <td style="vertical-align: top;"><div style="width: 40px; height: 40px; background: #ede9fe; border-radius: 50%; text-align: center; line-height: 40px; font-weight: 700; color: #7c3aed;">3</div></td>
+                <td style="padding-left: 15px; color: #4c1d95;"><strong>Готовый результат</strong><br><span style="color: #6b7280; font-size: 14px;">Вы получаете готовую презентацию, которая впечатлит вашу аудиторию</span></td>
+              </tr>
+            </table>
+          </div>
+          <div style="background: white; border-radius: 15px; padding: 25px 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
+            <h3 style="color: #4c1d95; margin: 0 0 15px; font-size: 18px;">📞 Есть вопросы?</h3>
+            <table style="width: 100%;">
+              <tr><td style="padding: 5px 0; color: #6b7280;">✉️ <a href="mailto:${ADMIN_EMAIL}" style="color: #7c3aed; text-decoration: none;">${ADMIN_EMAIL}</a></td></tr>
+              <tr><td style="padding: 5px 0; color: #6b7280;">📱 <span style="color: #4c1d95;">+7 (777) 777-77-77</span></td></tr>
+              <tr><td style="padding: 5px 0; color: #6b7280;">🕐 Пн-Пт: 9:00-18:00</td></tr>
+            </table>
+          </div>
+          <div style="text-align: center; margin-bottom: 20px;">
+            <a href="${SITE_URL}/cabinet.html" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-decoration: none; padding: 15px 40px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">Перейти в личный кабинет</a>
+          </div>
+          <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 13px;">
+            <p style="margin: 0 0 10px;">© 2025 «Презентации на заказ». Все права защищены.</p>
+            <p style="margin: 0;">Вы получили это письмо, потому что оформили заказ на нашем сайте.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }).catch(err => console.error('❌ Ошибка письма клиенту:', err.message));
+
+  // Письмо админу
+  transporter.sendMail({
+    from: EMAIL_FROM,
+    to: ADMIN_EMAIL,
+    subject: `🛒 Новый заказ #${order.orderId} от ${order.customer_name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; background: #1a1a2e; border-radius: 15px; padding: 30px; color: white;">
+        <h2 style="color: #e0aaff; margin: 0 0 20px;">🛒 Новый заказ!</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 12px; color: #a78bfa;"><strong>ID</strong></td><td style="padding: 12px;">${order.orderId}</td></tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 12px; color: #a78bfa;"><strong>Клиент</strong></td><td style="padding: 12px;">${order.customer_name}</td></tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 12px; color: #a78bfa;"><strong>Email</strong></td><td style="padding: 12px;">${order.email}</td></tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 12px; color: #a78bfa;"><strong>Телефон</strong></td><td style="padding: 12px;">${order.phone || '—'}</td></tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 12px; color: #a78bfa;"><strong>Сумма</strong></td><td style="padding: 12px; color: #ffd6ff; font-size: 18px;"><strong>${(order.total || 0).toLocaleString()} ₽</strong></td></tr>
+          <tr><td style="padding: 12px; color: #a78bfa;"><strong>Описание</strong></td><td style="padding: 12px;">${order.description || '—'}</td></tr>
+        </table>
+        <div style="text-align: center; margin-top: 25px;">
+          <a href="${SITE_URL}/admin.html" style="background: linear-gradient(135deg, #e0aaff, #ffd6ff); color: #2a2a2a; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block;">Открыть админ-панель</a>
+        </div>
+      </div>
+    `
+  }).catch(err => console.error('❌ Ошибка письма админу:', err.message));
+  
+  console.log('📧 Письма отправляются...');
 }
 
 // Middleware
@@ -360,7 +271,7 @@ app.post('/api/register', async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
     
     // Отправляем приветственное письмо с паролем
-    sendWelcomeEmail(user, password).catch(err => console.error('Ошибка отправки письма:', err));
+    sendWelcomeEmail(user, password);
     
     res.status(201).json({
       message: 'Регистрация успешна! Пароль отправлен на почту.',
@@ -467,7 +378,7 @@ app.post('/api/orders', (req, res) => {
     console.log('✅ Новый заказ:', order.orderId);
     
     // Отправляем email-уведомления
-    sendOrderEmails(order).catch(err => console.error('Ошибка отправки писем:', err));
+    sendOrderEmails(order);
     
     res.status(201).json({ message: 'Заказ создан', orderId: order.orderId });
   } catch (err) {
@@ -603,7 +514,7 @@ app.get('/api/admin/orders/export', adminMiddleware, (req, res) => {
 
 // ========== ПОДТВЕРЖДЕНИЕ ПОЧТЫ ==========
 
-// Отправка кода (отвечаем мгновенно, письмо в фоне)
+// Отправка кода подтверждения на почту
 app.post('/api/send-code', (req, res) => {
   const { email } = req.body;
   
@@ -617,27 +528,8 @@ app.post('/api/send-code', (req, res) => {
   // Сохраняем код (действителен 10 минут)
   verificationCodes[email] = { code, expires: Date.now() + 10 * 60 * 1000 };
   
-  // СРАЗУ отвечаем клиенту
-  res.json({ message: 'Код отправлен', code: code });
-  
-  // Отправляем письмо в фоне
-  transporter.sendMail({
-    from: EMAIL_FROM,
-    to: email,
-    subject: 'Код подтверждения регистрации',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; background: #1a1a2e; border-radius: 15px; padding: 40px; color: white; text-align: center;">
-        <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
-        <h2 style="color: #e0aaff; margin-bottom: 10px;">Код подтверждения</h2>
-        <p style="color: #a78bfa; margin-bottom: 30px;">Введите этот код на странице регистрации:</p>
-        <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 20px; margin-bottom: 30px;">
-          <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #ffd6ff;">${code}</span>
-        </div>
-        <p style="color: #6b7280; font-size: 14px;">Код действителен 10 минут</p>
-      </div>
-    `
-  }).then(() => console.log('✅ Код отправлен на', email))
-    .catch(err => console.error('❌ Ошибка отправки кода:', err.message));
+  // Отвечаем с кодом
+  res.json({ message: 'Код сгенерирован', code: code });
 });
 
 // Проверка кода
@@ -678,9 +570,9 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(` Сервер запущен: http://localhost:${PORT}`);
-  console.log(` API: http://localhost:${PORT}/api`);
-  console.log(` Админ-панель: http://localhost:${PORT}/admin-login.html`);
-  console.log(` Тест email: http://localhost:${PORT}/api/test-email`);
-  console.log(` Нажмите Ctrl+C для остановки`);
+  console.log(`🚀 Сервер запущен: http://localhost:${PORT}`);
+  console.log(`📋 API: http://localhost:${PORT}/api`);
+  console.log(`👑 Админ-панель: http://localhost:${PORT}/admin-login.html`);
+  console.log(`📧 Тест email: http://localhost:${PORT}/api/test-email`);
+  console.log(`💡 Нажмите Ctrl+C для остановки`);
 });
