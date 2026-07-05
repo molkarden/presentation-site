@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Личный кабинет - Профессиональные презентации</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <!-- Стили -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <!-- Навигация -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="bi bi-stars me-2"></i>Презентации
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Главная</a></li>
+          <li class="nav-item"><a class="nav-link" href="services.html">Услуги</a></li>
+          <li class="nav-item"><a class="nav-link" href="prices.html">Цены</a></li>
+          <li class="nav-item"><a class="nav-link" href="order.html">Заказать</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">О нас</a></li>
+          <li class="nav-item"><a class="nav-link" href="reviews.html">Отзывы</a></li>
+          <li class="nav-item"><a class="nav-link active" href="cabinet.html">Кабинет</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" id="logoutNavBtn" style="display:none;">Выйти</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Toast -->
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="successToast" class="toast toast-custom">
+      <div class="toast-header toast-header-custom">
+        <i class="bi bi-check-circle-fill text-success me-2"></i>
+        <strong class="me-auto">Успешно</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body">Изменения сохранены!</div>
+    </div>
+  </div>
+
+  <main class="container mt-5 pt-4">
+    <div class="row">
+      <div class="col-12 mb-4">
+        <h1 class="fw-bold mb-2">Личный кабинет</h1>
+        <p class="text-white-50">Управляйте заказами, корзиной и настройками профиля</p>
+      </div>
+
+      <!-- Боковая панель -->
+      <div class="col-lg-4 mb-4">
+        <div class="dashboard-card p-4 text-center mb-4">
+          <div class="user-avatar" id="userAvatar">👤</div>
+          <h4 class="mb-1" id="userName">Пользователь</h4>
+          <p class="text-white-50 mb-3" id="userEmail">email@example.com</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-custom btn-sm" id="editProfileBtn">
+              <i class="bi bi-pencil-square me-1"></i>Редактировать профиль
+            </button>
+            <button class="btn btn-outline-custom btn-sm" id="logoutBtn">
+              <i class="bi bi-box-arrow-right me-1"></i>Выйти
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-card p-4">
+          <h5 class="section-title">Статистика</h5>
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="stats-icon"><i class="bi bi-file-earmark-text"></i></div>
+              <div class="stats-number" id="totalOrders">0</div>
+              <div class="text-white-50">Заказов</div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="stats-icon"><i class="bi bi-star-fill"></i></div>
+              <div class="stats-number">4.9</div>
+              <div class="text-white-50">Рейтинг</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Услуги -->
+        <div class="dashboard-card p-4 mt-4">
+          <h5 class="section-title">Доступные услуги</h5>
+          <div class="service-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">Базовая презентация</h6>
+                <p class="text-white-50 mb-1">До 10 слайдов</p>
+              </div>
+              <div class="text-end">
+                <div class="service-price">5 000 ₽</div>
+                <button class="btn btn-outline-custom btn-sm" onclick="addToCart('Базовая презентация', 'До 10 слайдов', 5000, 'main')">
+                  <i class="bi bi-cart-plus"></i> В корзину
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="service-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">Бизнес-презентация</h6>
+                <p class="text-white-50 mb-1">До 20 слайдов</p>
+              </div>
+              <div class="text-end">
+                <div class="service-price">10 000 ₽</div>
+                <button class="btn btn-outline-custom btn-sm" onclick="addToCart('Бизнес-презентация', 'До 20 слайдов', 10000, 'main')">
+                  <i class="bi bi-cart-plus"></i> В корзину
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="service-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">Премиум презентация</h6>
+                <p class="text-white-50 mb-1">Без ограничений</p>
+              </div>
+              <div class="text-end">
+                <div class="service-price">20 000 ₽</div>
+                <button class="btn btn-outline-custom btn-sm" onclick="addToCart('Премиум презентация', 'Без ограничений', 20000, 'main')">
+                  <i class="bi bi-cart-plus"></i> В корзину
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Основной контент -->
+      <div class="col-lg-8">
+        <ul class="nav nav-tabs nav-tabs-custom mb-4">
+          <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#orders">Заказы</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cart">Корзина</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#settings">Настройки</a></li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Заказы -->
+          <div class="tab-pane fade show active" id="orders">
+            <div class="dashboard-card p-4">
+              <h5 class="section-title mb-4">Мои заказы</h5>
+              <div id="ordersList"></div>
+            </div>
+          </div>
+
+          <!-- Корзина -->
+          <div class="tab-pane fade" id="cart">
+            <div class="dashboard-card p-4">
+              <h5 class="section-title mb-4">Корзина</h5>
+              <div id="cartItems"></div>
+              <div class="d-flex justify-content-between align-items-center mt-4">
+                <h6>Итого: <span id="cartTotal">0 ₽</span></h6>
+                <a href="order.html" class="btn btn-custom btn-sm">
+                  <i class="bi bi-bag-check me-1"></i>Оформить заказ
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Настройки -->
+          <div class="tab-pane fade" id="settings">
+            <div class="dashboard-card p-4">
+              <h5 class="section-title mb-4">Настройки профиля</h5>
+              <form id="accountForm">
+                <div class="row mb-3">
+                  <div class="col-md-6 mb-3">
+                    <label for="firstName" class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="firstName">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="lastName" class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="lastName">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email">
+                </div>
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Телефон</label>
+                  <input type="tel" class="form-control" id="phone">
+                </div>
+                <button type="submit" class="btn btn-custom">
+                  <i class="bi bi-check-circle me-1"></i>Сохранить
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Подвал -->
+  <footer class="footer-custom text-white py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="mb-3">Презентации на заказ</h5>
+          <p class="opacity-75">Профессиональные презентации для бизнеса, образования и мероприятий.</p>
+          <div class="d-flex gap-3 mt-3">
+            <a href="#" class="social-link"><i class="bi bi-telegram"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-whatsapp"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-envelope"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h5 class="mb-3">Контакты</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><i class="bi bi-telephone me-2"></i>+7 (777) 777-77-77</li>
+            <li class="mb-2"><i class="bi bi-envelope me-2"></i>info@presentations.ru</li>
+            <li><i class="bi bi-clock me-2"></i>Пн-Пт: 9:00-18:00</li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h5 class="mb-3">Быстрые ссылки</h5>
+          <div class="row">
+            <div class="col-6">
+              <ul class="list-unstyled">
+                <li class="mb-2"><a href="index.html" class="text-white text-decoration-none opacity-75">Главная</a></li>
+                <li class="mb-2"><a href="services.html" class="text-white text-decoration-none opacity-75">Услуги</a></li>
+                <li><a href="prices.html" class="text-white text-decoration-none opacity-75">Цены</a></li>
+              </ul>
+            </div>
+            <div class="col-6">
+              <ul class="list-unstyled">
+                <li class="mb-2"><a href="order.html" class="text-white text-decoration-none opacity-75">Заказ</a></li>
+                <li class="mb-2"><a href="about.html" class="text-white text-decoration-none opacity-75">О нас</a></li>
+                <li><a href="reviews.html" class="text-white text-decoration-none opacity-75">Отзывы</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="my-4 opacity-25">
+      <div class="text-center opacity-75">
+        <p class="mb-0">&copy; 2025 Профессиональные презентации. Все права защищены.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Скрипты -->
+  <script src="js/main.js"></script>
+  <!-- Скрипты кабинета -->
+  <script src="js/cabinet.js"></script>
+</body>
+</html>

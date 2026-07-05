@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход в админ-панель</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+    .admin-login-card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-4">
+        <div class="admin-login-card">
+          <div class="text-center mb-4">
+            <i class="bi bi-shield-lock fs-1" style="color: #e0aaff;"></i>
+            <h3 class="mt-2" style="color: #e0aaff;">Админ-панель</h3>
+            <p class="text-white-50">Вход для администратора</p>
+          </div>
+          
+          <form id="adminLoginForm">
+            <div class="mb-3">
+              <label class="form-label" style="color: #ffd6ff;">Email</label>
+              <input type="email" class="form-control" id="adminEmail" value="admin@admin.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" style="color: #ffd6ff;">Пароль</label>
+              <input type="password" class="form-control" id="adminPassword" value="admin123" required>
+            </div>
+            <div id="loginError" class="text-danger mb-3" style="display:none;"></div>
+            <div id="loginSuccess" class="text-success mb-3" style="display:none;"></div>
+            <button type="submit" class="btn btn-custom w-100">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+            </button>
+          </form>
+          
+          <div class="text-center mt-3 pt-3 border-top border-white-25">
+            <small class="text-white-50">Быстрый вход (для теста):</small><br>
+            <button type="button" class="btn btn-sm btn-outline-custom mt-2" onclick="quickLogin()">
+              <i class="bi bi-shield-check me-1"></i>Войти как админ
+            </button>
+          </div>
+          
+          <div class="text-center mt-3">
+            <a href="index.html" style="color: rgba(255,255,255,0.5);">← На сайт</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Быстрый вход без пароля
+    function quickLogin() {
+      localStorage.setItem('token', 'admin_token_' + Date.now());
+      localStorage.setItem('userProfile', JSON.stringify({ 
+        name: 'Администратор', 
+        email: 'admin@admin.com', 
+        role: 'admin' 
+      }));
+      window.location.href = 'admin.html';
+    }
+    
+    // Обычный вход через форму
+    document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value.trim();
+      const errorDiv = document.getElementById('loginError');
+      const successDiv = document.getElementById('loginSuccess');
+      
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+      
+      // Пробуем вход через сервер
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          successDiv.textContent = '✅ Вход выполнен!';
+          successDiv.style.display = 'block';
+          setTimeout(() => window.location.href = 'admin.html', 500);
+        } else {
+          // Сервер вернул ошибку — пробуем локально
+          tryLocalLogin(email, password, errorDiv, successDiv);
+        }
+      } catch (err) {
+        // Сервер недоступен — локальный вход
+        tryLocalLogin(email, password, errorDiv, successDiv);
+      }
+    });
+    
+    function tryLocalLogin(email, password, errorDiv, successDiv) {
+      // Проверяем админа
+      if (email === 'admin@admin.com' && password === 'admin123') {
+        localStorage.setItem('token', 'admin_token_' + Date.now());
+        localStorage.setItem('userProfile', JSON.stringify({ 
+          name: 'Администратор', 
+          email: 'admin@admin.com', 
+          role: 'admin' 
+        }));
+        
+        successDiv.textContent = '✅ Вход выполнен!';
+        successDiv.style.display = 'block';
+        setTimeout(() => window.location.href = 'admin.html', 500);
+      } else {
+        // Проверяем обычных пользователей в localStorage
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const user = users.find(u => u.email === email && u.password === password);
+        
+        if (user) {
+          localStorage.setItem('token', 'user_token_' + user.id);
+          localStorage.setItem('userProfile', JSON.stringify(user));
+          successDiv.textContent = '✅ Вход выполнен!';
+          successDiv.style.display = 'block';
+          setTimeout(() => window.location.href = 'cabinet.html', 500);
+        } else {
+          errorDiv.textContent = '❌ Неверный email или пароль';
+          errorDiv.style.display = 'block';
+        }
+      }
+    }
+  </script>
+</body>
+</html>

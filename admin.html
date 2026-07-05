@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      font-family: 'Roboto', sans-serif;
+      color: white;
+      min-height: 100vh;
+    }
+    .admin-header {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-3px);
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #e0aaff;
+    }
+    .table-container {
+      background: rgba(30, 30, 50, 0.9);
+      border-radius: 15px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .table-custom {
+      margin-bottom: 0;
+      color: #ffffff;
+    }
+    .table-custom thead th {
+      background: rgba(224, 170, 255, 0.15);
+      border-bottom: 2px solid rgba(224, 170, 255, 0.3);
+      color: #e0aaff;
+      font-weight: 600;
+      padding: 15px;
+    }
+    .table-custom tbody td {
+      background: transparent;
+      border-color: rgba(255,255,255,0.05);
+      color: #ffffff;
+      padding: 12px 15px;
+      vertical-align: middle;
+    }
+    .table-custom tbody tr:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    .status-select {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .status-select option {
+      background: #1a1a2e;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-header d-flex justify-content-between align-items-center">
+    <h4 class="mb-0" style="color: #e0aaff;"><i class="bi bi-shield-lock me-2"></i>Админ-панель</h4>
+    <div>
+      <span id="adminName" class="me-3">Администратор</span>
+      <a href="index.html" class="btn btn-outline-custom btn-sm me-2">На сайт</a>
+      <button class="btn btn-outline-custom btn-sm" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+
+  <div class="container-fluid p-4">
+    <!-- Статистика -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+          <i class="bi bi-cart fs-2" style="color: #e0aaff;"></i>
+          <div class="stat-number" id="totalOrders">0</div>
+          <small class="text-white-50">Всего заказов</small>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+          <i class="bi bi-clock fs-2" style="color: #ffc107;"></i>
+          <div class="stat-number" id="pendingOrders">0</div>
+          <small class="text-white-50">Ожидают</small>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+          <i class="bi bi-people fs-2" style="color: #4CAF50;"></i>
+          <div class="stat-number" id="totalUsers">0</div>
+          <small class="text-white-50">Пользователей</small>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+          <i class="bi bi-cash-stack fs-2" style="color: #ffd6ff;"></i>
+          <div class="stat-number" id="totalRevenue">0 ₽</div>
+          <small class="text-white-50">Выручка</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Заказы -->
+    <div class="table-container p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0" style="color: #e0aaff;">Заказы</h5>
+        <button class="btn btn-outline-custom btn-sm" onclick="exportOrders()">
+          <i class="bi bi-download me-1"></i>Экспорт CSV
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-custom">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Клиент</th>
+              <th>Email</th>
+              <th>Сумма</th>
+              <th>Статус</th>
+              <th>Дата</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <i class="bi bi-hourglass-split" style="font-size: 2rem;"></i>
+                <p class="mt-2">Загрузка...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
