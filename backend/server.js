@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -23,6 +22,49 @@ const transporter = nodemailer.createTransport({
 const EMAIL_FROM = `"Презентации на заказ" <${process.env.EMAIL_USER || 'molkarden7@gmail.com'}>`;
 const ADMIN_EMAIL = process.env.EMAIL_USER || 'molkarden7@gmail.com';
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+
+// ========== НОВАЯ ФУНКЦИЯ: Отправка пароля при регистрации ==========
+async function sendWelcomeEmail(user, password) {
+  try {
+    await transporter.sendMail({
+      from: EMAIL_FROM,
+      to: user.email,
+      subject: 'Добро пожаловать! Ваши данные для входа ✨',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f0ff;">
+          <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 40px 20px; text-align: center;">
+            <div style="font-size: 48px;">🎉</div>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Добро пожаловать!</h1>
+            <p style="color: #e9d5ff; margin: 10px 0 0;">Ваш аккаунт создан</p>
+          </div>
+          <div style="max-width: 600px; margin: 0 auto; padding: 30px 20px;">
+            <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);">
+              <p style="font-size: 18px; color: #4c1d95;">Здравствуйте, <strong>${user.name}</strong>! 👋</p>
+              <p style="color: #6b7280;">Ваш аккаунт успешно создан. Данные для входа:</p>
+              <div style="background: #f8f7ff; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>📧 Email:</strong> ${user.email}</p>
+                <p style="margin: 5px 0;"><strong>🔑 Пароль:</strong> <span style="background: #ede9fe; padding: 3px 10px; border-radius: 5px; font-family: monospace;">${password}</span></p>
+              </div>
+              <p style="color: #ef4444; font-size: 14px;">⚠️ Рекомендуем сменить пароль после первого входа.</p>
+            </div>
+            <div style="text-align: center;">
+              <a href="${SITE_URL}/login.html" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-decoration: none; padding: 15px 40px; border-radius: 50px; font-weight: 600;">Войти в личный кабинет</a>
+            </div>
+            <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 13px;">
+              <p>© 2025 «Презентации на заказ»</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    });
+    console.log('✅ Приветственное письмо отправлено:', user.email);
+  } catch (err) {
+    console.error('❌ Ошибка отправки приветственного письма:', err.message);
+  }
+}
 
 // Функция отправки уведомлений о новом заказе
 async function sendOrderEmails(order) {
@@ -305,8 +347,11 @@ app.post('/api/register', async (req, res) => {
     
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
     
+    // Отправляем приветственное письмо с паролем
+    sendWelcomeEmail(user, password).catch(err => console.error('Ошибка отправки письма:', err));
+    
     res.status(201).json({
-      message: 'Регистрация успешна',
+      message: 'Регистрация успешна! Пароль отправлен на почту.',
       token,
       user: { id: user.id, name: user.name, email: user.email }
     });
@@ -569,9 +614,9 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен: http://localhost:${PORT}`);
-  console.log(`📋 API: http://localhost:${PORT}/api`);
-  console.log(`👑 Админ-панель: http://localhost:${PORT}/admin-login.html`);
-  console.log(`📧 Тест email: http://localhost:${PORT}/api/test-email`);
-  console.log(`💡 Нажмите Ctrl+C для остановки`);
+  console.log(` Сервер запущен: http://localhost:${PORT}`);
+  console.log(` API: http://localhost:${PORT}/api`);
+  console.log(` Админ-панель: http://localhost:${PORT}/admin-login.html`);
+  console.log(` Тест email: http://localhost:${PORT}/api/test-email`);
+  console.log(` Нажмите Ctrl+C для остановки`);
 });
