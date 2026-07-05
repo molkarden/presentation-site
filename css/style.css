@@ -791,3 +791,205 @@ h1, h2, h3, .navbar-brand {
   color: #e0aaff;
   background: rgba(224, 170, 255, 0.1);
 }
+
+/* ========== АДАПТАЦИЯ ДЛЯ ПЛАНШЕТОВ ========== */
+@media (max-width: 992px) {
+  .hero-card {
+    padding: 25px !important;
+  }
+  
+  h1, .display-4 {
+    font-size: 2rem !important;
+  }
+  
+  .lead {
+    font-size: 1rem !important;
+  }
+  
+  .stat-number {
+    font-size: 2rem !important;
+  }
+  
+  .dashboard-card {
+    margin-bottom: 20px;
+  }
+  
+  .order-form {
+    padding: 20px !important;
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 8px 12px !important;
+    font-size: 0.9rem;
+  }
+}
+
+/* ========== АДАПТАЦИЯ ДЛЯ ТЕЛЕФОНОВ ========== */
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll !important;
+  }
+  
+  h1, .display-4 {
+    font-size: 1.6rem !important;
+  }
+  
+  h2 {
+    font-size: 1.3rem !important;
+  }
+  
+  h3 {
+    font-size: 1.1rem !important;
+  }
+  
+  .hero-card {
+    padding: 15px !important;
+    border-radius: 12px !important;
+  }
+  
+  .lead {
+    font-size: 0.9rem !important;
+  }
+  
+  .btn-custom, .btn-outline-custom {
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .d-flex.gap-3 {
+    flex-direction: column;
+    gap: 10px !important;
+  }
+  
+  /* Карточки услуг */
+  .feature-card, .service-card, .review-card {
+    padding: 15px !important;
+  }
+  
+  /* Навигация */
+  .navbar-brand {
+    font-size: 1.1rem !important;
+  }
+  
+  .navbar-nav {
+    padding: 10px 0;
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 10px 15px !important;
+    text-align: center;
+  }
+  
+  /* Таблицы */
+  .table-responsive {
+    font-size: 0.8rem;
+  }
+  
+  .table-custom th,
+  .table-custom td {
+    padding: 8px 5px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  /* Статистика */
+  .stat-number {
+    font-size: 1.5rem !important;
+  }
+  
+  .stat-label, .stats-label {
+    font-size: 0.7rem !important;
+  }
+  
+  /* Формы */
+  .order-form, .review-form, .form-custom {
+    padding: 15px !important;
+  }
+  
+  .form-control {
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  /* Отступы */
+  .mt-5 { margin-top: 1.5rem !important; }
+  .pt-5 { padding-top: 1.5rem !important; }
+  .mb-5 { margin-bottom: 1.5rem !important; }
+  .py-5 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+  
+  /* Подвал */
+  .footer-custom {
+    text-align: center;
+  }
+  
+  .footer-custom .row > div {
+    margin-bottom: 15px;
+  }
+  
+  /* Карусель */
+  .carousel-control-prev,
+  .carousel-control-next {
+    display: none;
+  }
+  
+  /* Изображения */
+  .image-container {
+    margin-top: 20px;
+  }
+  
+  .hero-card img,
+  .image-container img {
+    max-height: 250px;
+    object-fit: cover;
+  }
+  
+  /* Статус заказа */
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+  
+  /* Тост уведомления */
+  .toast-container {
+    width: 90%;
+    left: 5% !important;
+    right: 5% !important;
+  }
+}
+
+/* ========== МАЛЕНЬКИЕ ТЕЛЕФОНЫ ========== */
+@media (max-width: 480px) {
+  h1, .display-4 {
+    font-size: 1.4rem !important;
+  }
+  
+  h2 {
+    font-size: 1.1rem !important;
+  }
+  
+  .hero-card {
+    padding: 12px !important;
+  }
+  
+  .stat-number {
+    font-size: 1.2rem !important;
+  }
+  
+  .stat-label {
+    font-size: 0.65rem !important;
+  }
+  
+  .btn-custom, .btn-outline-custom {
+    padding: 8px 15px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .form-label {
+    font-size: 0.85rem !important;
+  }
+  
+  .navbar-brand {
+    font-size: 1rem !important;
+  }
+}
