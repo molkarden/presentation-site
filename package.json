@@ -1,0 +1,9 @@
+{
+  "name": "presentation-site",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "start": "cd backend && node server.js"
+  }
+}
