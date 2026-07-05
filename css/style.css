@@ -1002,3 +1002,184 @@ h1, h2, h3, .navbar-brand {
   font-style: normal;
   font-display: swap;
 }
+
+/* ========== АНИМАЦИИ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ ========== */
+
+/* Плавное появление элементов при скролле */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Плавное нажатие на кнопки */
+.btn-custom:active,
+.btn-outline-custom:active {
+  transform: scale(0.95) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* Анимация появления карточек */
+@media (max-width: 768px) {
+  .hero-card,
+  .feature-card,
+  .service-card,
+  .review-card,
+  .pricing-card,
+  .dashboard-card {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  /* Задержка для карточек */
+  .feature-card:nth-child(2),
+  .service-card:nth-child(2),
+  .pricing-card:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  
+  .feature-card:nth-child(3),
+  .service-card:nth-child(3),
+  .pricing-card:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+  
+  /* Пульсация кнопок */
+  .btn-custom {
+    animation: pulse 2s infinite;
+  }
+  
+  .btn-custom:hover {
+    animation: none;
+  }
+  
+  /* Сияние на кнопке */
+  .btn-custom::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  /* Плавное меню */
+  .navbar-collapse {
+    transition: all 0.3s ease;
+  }
+  
+  .navbar-collapse.show {
+    animation: fadeInUp 0.3s ease;
+  }
+  
+  /* Покачивание иконок */
+  .stats-icon i,
+  .feature-icon i,
+  .service-icon i {
+    transition: transform 0.3s ease;
+  }
+  
+  .stats-icon:active i,
+  .feature-icon:active i,
+  .service-icon:active i {
+    transform: scale(1.2) rotate(10deg);
+  }
+  
+  /* Анимация свайпа для карусели */
+  .carousel-item {
+    transition: transform 0.4s ease-in-out !important;
+  }
+  
+  /* Плавное появление тоста */
+  .toast.show {
+    animation: fadeInUp 0.4s ease;
+  }
+  
+  /* Подсветка при касании */
+  .nav-link:active,
+  .quick-nav-card:active,
+  .service-card:active {
+    background: rgba(224, 170, 255, 0.2) !important;
+    transition: background 0.2s ease;
+  }
+  
+  /* Плавный скролл */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Анимация загрузки */
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #e0aaff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+}
+
+/* Анимация для маленьких телефонов */
+@media (max-width: 480px) {
+  .hero-card h1 {
+    animation: fadeInLeft 0.5s ease;
+  }
+  
+  .hero-card p {
+    animation: fadeInRight 0.5s ease 0.1s both;
+  }
+  
+  .hero-card .btn-custom {
+    animation: fadeInUp 0.5s ease 0.2s both, pulse 2s infinite 0.7s;
+  }
+  
+  /* Ускоренные анимации */
+  .feature-card,
+  .service-card,
+  .review-card {
+    animation-duration: 0.4s;
+  }
+}
